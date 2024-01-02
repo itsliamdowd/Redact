@@ -3,6 +3,8 @@ Leverage the benefits of large language models without leaking sensitive informa
 
 Redact allows you to interact with the contents of your PDF files by first removing sensitive information, replacing it with generic information, and then allowing the files to be interacted with by large language models over API calls. This allows for a middle-of-the-road solution where private information is protected while still allowing you to use the power of remote LLMs.
 
+Redact uses the powerful Mixtral-8x7B model for quick and extremely accurate results.
+
 ## Realtime demo
 
 
