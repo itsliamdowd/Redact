@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redact</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+</head>
+
+<body>
+  <div id="fileUploadModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeFileUploadModal()">&times;</span>
+      <div class="load"></div>
+      <br>
+      <div class="file-upload">
+        <label for="upload" class="file-upload__label">Upload PDF Files</label>
+        <input type="file" name="pdf-file" class="file-upload__input" style="padding:10px" multiple="true" id="upload"
+          onchange="updateFileNames()" required>
+      </div>
+
+      <h1 class="text-success" id="uploadedFileNames"></h1>
+      <h1 class="text-timer" id="timer"></h1>
+
+      <br><br>
+      <button type="button" onclick="uploadDocument()" class="flipping-button">
+        <span>
+          <em>Process</em>
+        </span>
+        <span>
+          <em>Submit</em>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div id="documentsModal" class="modal">
+    <div class="modal-content-documents">
+      <span class="close-btn-documents" onclick="closeDocumentsModal()">&times;</span>
+      <h1 id="title-documents">Documents</h1>
+      <ul id="fileList">
+        {% for document in documents %}
+        <a class="links" href="/document?name={{ document }}" target="_blank">
+          <li>
+            {{ document }}
+          </li>
+        </a>
+        {% endfor %}
+      </ul>
+
+      <button class="clear" onclick="location.href = '/clear'">Delete All Documents</button>
+    </div>
+  </div>
+
+  <section class="message">
+    <header class="message-header">
+      <div class="message-header-title">
+        <i class="fas fa-scroll"></i> Redact
+      </div>
+      <div class="message-header-options">
+        <a onclick="openDocumentsModal();" id="files-update" style="cursor: pointer;"><i class="fas fa-folder-open"
+            id="files"></i> <span class="font-update" style="cursor: pointer;">Files</span></a>
+        <a onclick="openFileUploadModal();" id="documents-update"><i class="fas fa-file-upload" id="upload"></i> <span
+            class="font-update" style="cursor:pointer;">Upload</span></a>
+      </div>
+    </header>
+
+    <main class="message-chat">
+      {% for right_msg, left_msg in history %}
+      {% if right_msg %}
+      <div class="msg right-msg">
+        <div class="msg-bubble">
+          <div class="msg-text">{{ right_msg }}</div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if left_msg %}
+      <div class="msg left-msg">
+        <div class="msg-bubble">
+          <div class="msg-text">{{ left_msg }}</div>
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </main>
+
+    <div class="message-inputarea">
+      <input type="text" class="message-input" placeholder="Message RedactAI..." id="messageInput">
+      <button class="message-send-btn" onclick="sendMessage()">Send</button>
+    </div>
+
+    <h3 id="info">Redact can make mistakes. Be sure to double check important information.</h3>
+
+    <style>
+      :root {
+        --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --message-bg: #2a2836;
+        --border-bottom: 2px solid #2a2836;
+        --left-msg-bg: gray;
+        --right-msg-bg: #218aff;
+
+        --base-line-height: 24px;
+        --white: rgb(255, 255, 255);
+        --off-white: rgba(255, 255, 255, 0.2);
+        --spin-duration: 1s;
+        --pulse-duration: 750ms;
+      }
+
+      html {
+        box-sizing: border-box;
+      }
+
+      a,
+      a:hover,
+      a:visited,
+      a:active {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      *,
+      *:before,
+      *:after {
+        margin: 0;
+        padding: 0;
+        box-sizing: inherit;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Helvetica, sans-serif;
+        background-color: #2a2836;
+      }
+
+      .message {
+        display: flex;
+        flex-flow: column wrap;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 100%;
+        height: calc(100%);
+        margin-top: 0;
+        border: var(--border);
+        border-radius: 5px;
+        background: var(--message-bg);
+        box-shadow: 0 15px 15px -5px rgba(0, 0, 0, 0.2);
+      }
+
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      li {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      li:hover {
+        background-color: #e0e0e0;
+      }
+
+      .clear {
+        margin-top: 50px;
+        display: inline-block;
+        position: relative;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #f43535;
+        color: #fff;
+        padding: 10px;
+        border-radius: 10px;
+        border-style: none;
+        font-size: 1em;
+        position: absolute;
+        top: 75%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1001;
+        cursor: pointer;
+      }
+
+      #files-update {
+        position: absolute;
+        top: 10px;
+        right: 170px;
+      }
+
+      #documents-update {
+        position: absolute;
+        top: 20px;
+        right: 25px;
+      }
+
+      #fileList {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50%;
+        height: 50%;
+        text-align: center;
+        z-index: 1001;
+      }
+
+      .links {
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+      }
+
+      .font-update {
+        font-family: Helvetica, sans-serif;
+        font-style: normal;
+        display: inline-block;
+        font-size: 1em;
+        font-weight: 600;
+      }
+
+      .message-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 12.5px;
+        border-bottom: var(--border);
+        background: #eee;
+        color: #676;
+      }
+
+      .message-header-title {
+        font-family: Helvetica, sans-serif;
+        font-style: normal;
+        display: inline-block;
+        font-size: 2em;
+        font-weight: 600;
+        margin-left: 25px;
+      }
+
+      .message-header-options {
+        margin: 0;
+        padding: 0;
+        font-size: 1.5em;
+      }
+
+      .message-chat {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+      }
+
+      .msg {
+        display: flex;
+        align-items: flex-end;
+        margin-bottom: 10px;
+      }
+
+      .msg:last-of-type {
+        margin: 0;
+      }
+
+      .msg-img {
+        width: 50px;
+        height: 50px;
+        margin-right: 10px;
+        background: #ddd;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        border-radius: 50%;
+        display: none;
+      }
+
+      .msg-bubble {
+        color: #FFFCF9;
+        font-size: 1em;
+        max-width: 450px;
+        padding: 15px;
+        border-radius: 15px;
+        background: var(--left-msg-bg);
+      }
+
+      .msg-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .left-msg .msg-bubble {
+        border-bottom-left-radius: 0;
+      }
+
+      .right-msg {
+        flex-direction: row-reverse;
+      }
+
+      .right-msg .msg-bubble {
+        background: var(--right-msg-bg);
+        color: #fff;
+        border-bottom-right-radius: 0;
+      }
+
+      .right-msg .msg-img {
+        margin: 0 0 0 10px;
+      }
+
+      .message-inputarea {
+        display: flex;
+        padding: 30px;
+        padding-bottom: 40px;
+        border-top: var(--border);
+        background: #FFFCF9;
+        -webkit-border-radius: 25px 25px 0px 0px;
+        border-radius: 25px 25px 0px 0px;
+      }
+
+      .message-inputarea * {
+        padding: 10px;
+        border: none;
+        border-radius: 3px;
+        font-size: 1em;
+      }
+
+      .message-input {
+        font-family: Helvetica, sans-serif;
+        font-style: normal;
+        display: inline-block;
+        font-size: 1.125rem;
+        font-weight: 400;
+        flex: 1;
+        background: #ddd;
+      }
+
+      .message-send-btn {
+        font-family: Helvetica, sans-serif;
+        font-size: 1.5em;
+        margin-left: 10px;
+        background: #218aff;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.23s;
+        border-radius: 15px;
+      }
+
+      .message-send-btn:hover {
+        background: #218aff;
+      }
+
+      .message-chat {
+        font-family: Helvetica, sans-serif;
+        font-style: normal;
+        display: inline-block;
+        font-size: 1.125rem;
+        font-weight: 400;
+        width: 95%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #2a2836;
+        height: 65%;
+      }
+
+      #files {
+        margin-top: 12.5%;
+        margin-bottom: 0;
+      }
+
+      #upload {
+        cursor: pointer;
+        margin-right: 5px;
+        margin-bottom: 0;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        width: 50%;
+        height: 50%;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        text-align: center;
+        float: none;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content-documents {
+        width: 80%;
+        height: 80%;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        text-align: center;
+        float: none;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .flipping-button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: hidden;
+        line-height: 1;
+        border-radius: 0.7rem;
+        padding: .815rem 1.232rem;
+        cursor: pointer;
+        border: none;
+        color: #fff;
+        background: #2a2836;
+        transition: background .4s linear;
+        will-change: background;
+        position: absolute;
+        top: 60%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .flipping-button:hover {
+        color: #fff;
+        background: #218aff;
+      }
+
+      .flipping-button:hover span:nth-of-type(1) em {
+        opacity: 0;
+        transform: rotateX(90deg) scaleX(.9) translate3d(0, -10px, 0);
+      }
+
+      .flipping-button:hover span:nth-of-type(2) em {
+        opacity: 1;
+        transform: rotateX(0deg) scaleX(1) translateZ(0);
+        transition: transform .75s cubic-bezier(.645, .045, .355, 1), opacity .35s linear .3s;
+      }
+
+      #title-documents {
+        position: absolute;
+        top: 15%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        text-align: center;
+        font-family: Helvetica, sans-serif;
+        font-style: normal;
+        display: inline-block;
+        font-size: 1.5em;
+        font-weight: 600;
+        z-index: 10001;
+      }
+
+      #info {
+        position: absolute;
+        top: 97%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        text-align: center;
+        font-family: Helvetica, sans-serif;
+        font-style: normal;
+        display: inline-block;
+        font-size: 1em;
+        font-weight: 400;
+
+      }
+
+      span {
+        position: relative;
+        display: block;
+        perspective: 108px;
+      }
+
+      span:nth-of-type(2) {
+        position: absolute;
+      }
+
+      em {
+        font-style: normal;
+        display: inline-block;
+        font-size: 1.125rem;
+        color: #fff;
+        font-weight: 600;
+        will-change: transform, opacity, transition;
+        transition: transform .55s cubic-bezier(.645, .045, .355, 1), opacity .35s linear .2s;
+      }
+
+      span:nth-of-type(1) em {
+        transform-origin: top;
+      }
+
+      span:nth-of-type(2) em {
+        opacity: 0;
+        transform: rotateX(-90deg) scaleX(.9) translate3d(0, 10px, 0);
+        transform-origin: bottom;
+      }
+
+      .file-upload {
+        display: inline-block;
+        position: absolute;
+        top: 45%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+      }
+
+      .file-upload__label {
+        font-family: Helvetica, sans-serif;
+        font-style: normal;
+        display: inline-block;
+        font-size: 1.125rem;
+        color: #fff;
+        font-weight: 600;
+        display: block;
+        padding: 1em 2em;
+        color: #fff;
+        background: #2a2836;
+        border-radius: .4em;
+        transition: background .3s;
+        cursor: pointer;
+
+        &:hover {
+          cursor: pointer;
+          background: #000;
+        }
+      }
+
+      .file-upload__input {
+        cursor: pointer;
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        font-size: 1;
+        width: 0;
+        height: 100%;
+        opacity: 0;
+        background-color: #2a2836;
+        font-family: Helvetica, sans-serif;
+      }
+
+      .text-success {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        color: #2a2836;
+        font-style: normal;
+        display: inline-block;
+        font-size: 1.125rem;
+        font-weight: 600;
+        font-size: 2em;
+      }
+
+      .close-btn {
+        cursor: pointer;
+        font-size: 60px;
+        font-weight: bold;
+        color: #f43535;
+        position: absolute;
+        top: 30%;
+        left: 30%;
+        transform: translate(-50%, -50%);
+        z-index: 10002;
+      }
+
+      .close-btn-documents {
+        cursor: pointer;
+        font-size: 60px;
+        font-weight: bold;
+        color: #f43535;
+        position: absolute;
+        top: 15%;
+        left: 15%;
+        transform: translate(-50%, -50%);
+        z-index: 10002;
+      }
+
+      .load {
+        border-radius: 50%;
+        width: var(--base-line-height);
+        height: var(--base-line-height);
+        border: 0.25rem solid #D3D3D3;
+        border-top-color: #000;
+        animation: spin var(--spin-duration) infinite linear;
+        z-index: 1001;
+        position: absolute;
+        top: 40%;
+        left: calc(50%-80px);
+        margin: 0 auto;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        display: none;
+      }
+
+      #timer {
+        display: none;
+        position: absolute;
+        z-index: 1001;
+        top: 62.5%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .spin-animation {
+        -webkit-animation: spin 1s linear infinite;
+        animation: spin 1s linear infinite;
+      }
+
+      @-webkit-keyframes spin {
+        0% {
+          -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+          -webkit-transform: rotate(360deg);
+        }
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+</body>
+
+<script>
+  function sendMessage() {
+    var messageInput = document.getElementById('messageInput');
+    var newMessageText = messageInput.value;
+
+    if (newMessageText.trim() === "") {
+      return;
+    }
+
+    messageInput.value = "";
+
+    var chatContainer = document.querySelector('.message-chat');
+    var userMessage = `
+          <div class="msg right-msg">
+              <div class="msg-img"></div>
+              <div class="msg-bubble">
+                  <div class="msg-text">${newMessageText}</div>
+              </div>
+          </div>
+      `;
+    chatContainer.insertAdjacentHTML('beforeend', userMessage);
+
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    var loadingMessage = `
+    <div class="msg left-msg loading">
+        <div class="msg-img"></div>
+        <div class="msg-bubble loading">
+            <div class="msg-text">Loading</div>
+        </div>
+    </div>
+`;
+
+    chatContainer.insertAdjacentHTML('beforeend', loadingMessage);
+
+    setTimeout(function () {
+      var loadingElement = document.querySelector('.left-msg.loading');
+      updateLoadingMessage(loadingElement, 3);
+    }, 500);
+
+    function updateLoadingMessage(element, iterations) {
+      var counter = 0;
+      var intervalId = setInterval(function () {
+        counter++;
+        element.querySelector('.msg-text').innerText = 'Loading' + '.'.repeat(counter);
+        if (counter === iterations) {
+          clearInterval(intervalId);
+        }
+      }, 500);
+    }
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    url = "/chat?message=" + newMessageText;
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/text',
+      },
+      args: {
+        message: newMessageText
+      }
+    })
+      .then(response => response.text())
+      .then(data => {
+        var loadingMessages = document.querySelectorAll('.loading');
+        loadingMessages.forEach(loadingMessage => {
+          loadingMessage.style.display = 'none';
+        });
+        var botMessage = `
+            <div class="msg left-msg">
+                <div class="msg-img"></div>
+                <div class="msg-bubble">
+                    <div class="msg-text">${data}</div>
+                </div>
+            </div>
+        `;
+        chatContainer.insertAdjacentHTML('beforeend', botMessage);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+  function openFileUploadModal() {
+    var modal = document.getElementById('fileUploadModal');
+    modal.style.display = 'flex';
+  }
+
+  function closeFileUploadModal() {
+    var modal = document.getElementById('fileUploadModal');
+    modal.style.display = 'none';
+  }
+
+  function openDocumentsModal() {
+    var modal = document.getElementById('documentsModal');
+    modal.style.display = 'flex';
+  }
+
+  function closeDocumentsModal() {
+    var modal = document.getElementById('documentsModal');
+    modal.style.display = 'none';
+  }
+
+  function updateFileNames() {
+    var fileInput = document.getElementById('upload');
+
+    if (fileInput.files.length === 1) {
+      fileNames = fileInput.files.length + " file";
+    }
+    if (fileInput.files.length > 1) {
+      fileNames = fileInput.files.length + " files";
+    }
+
+    var uploadedFileNames = document.getElementById('uploadedFileNames');
+    uploadedFileNames.textContent = fileNames;
+    uploadedFileNames.style.display = 'flex';
+    uploadedFileNames.style.position = 'absolute';
+    var fileInput = document.querySelector('.file-upload');
+    fileInput.style.top = '52.5%';
+    var process = document.querySelector('.flipping-button');
+    process.style.top = '65%';
+  }
+
+  document.querySelector("#form").addEventListener("submit", load);
+
+  function resetUpload() {
+    var fileInput = document.getElementById('upload');
+    fileInput.value = "";
+    var uploadedFileNames = document.getElementById('uploadedFileNames');
+    uploadedFileNames.textContent = "";
+    uploadedFileNames.style.display = 'none';
+    var fileInput = document.querySelector('.file-upload');
+    fileInput.style.display = 'flex';
+    fileInput.style.top = '50%';
+    var process = document.querySelector('.flipping-button');
+    process.style.display = 'flex';
+    process.style.top = '60%';
+    var timer = document.getElementById('timer');
+    timer.style.display = 'none';
+    var load = document.querySelector('.load');
+    load.style.display = 'none';
+  }
+
+  function uploadDocument() {
+    var fileInput = document.getElementById('upload');
+    var files = fileInput.files;
+
+    if (files.length === 0) {
+      alert('Please select at least one file.');
+      return;
+    }
+
+    var fileInput = document.querySelector('.file-upload');
+    fileInput.style.display = 'none';
+
+    var loadingIcon = document.querySelector('.load');
+    loadingIcon.style.display = 'flex';
+    loadingIcon.classList.add('spin-animation');
+
+    var process = document.querySelector('.flipping-button');
+    process.style.display = 'none';
+
+    var uploadedFileNames = document.getElementById('uploadedFileNames');
+    uploadedFileNames.style.display = 'none';
+
+    var timer = document.getElementById('timer');
+    timer.style.display = 'flex';
+
+    var time = 0;
+    var interval = setInterval(function () {
+      time += 0.01;
+      timer.textContent = time.toFixed(2) + " seconds";
+    }, 10);
+
+    var formData = new FormData();
+    for (var i = 0; i < files.length; i++) {
+      formData.append('pdf-files[]', files[i]);
+    }
+
+    fetch('/', {
+      method: 'POST',
+      body: formData,
+    })
+      .then(response => response.text())
+      .then(data => {
+        console.log(data);
+        clearInterval(interval);
+        resetUpload();
+        closeFileUploadModal();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        clearInterval(interval);
+        resetUpload();
+        closeFileUploadModal();
+      });
+  }
+
+</script>
+</section>
+</html>
