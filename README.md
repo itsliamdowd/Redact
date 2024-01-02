@@ -1,15 +1,15 @@
 # Redact
 Leverage the benefits of large language models without leaking sensitive information.
 
-Redact allows you to interact with the contents of your PDF files by removing sensitive information from your files, replacing it with generic information, and then allowing files to be used by large language models over API calls. This allows for a middle-of-the-road solution where private information is protected while still allowing you to use LLMs remotely.
+Redact allows you to interact with the contents of your PDF files by first removing sensitive information, replacing it with generic information, and then allowing the files to be interacted with by large language models over API calls. This allows for a middle-of-the-road solution where private information is protected while still allowing you to use the power of remote LLMs.
 
+## Realtime demo
 
 
 https://github.com/itsliamdowd/Redact/assets/101684827/1876f4d5-fccb-4811-881d-3a1cea47fc43
 
 
 
-Realtime demo
 
 ## Installation
 1. git clone the project
