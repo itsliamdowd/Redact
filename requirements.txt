@@ -1,0 +1,5 @@
+Flask==2.0.3
+langchain==0.0.353
+pypdf==3.17.4
+spacy==3.7.2
+transformers==4.22.2
