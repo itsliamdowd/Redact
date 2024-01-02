@@ -9,6 +9,8 @@ https://github.com/itsliamdowd/Redact/assets/101684827/1876f4d5-fccb-4811-881d-3
 
 
 
+Realtime demo
+
 ## Installation
 1. git clone the project
 2. create a new venv
