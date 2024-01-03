@@ -20,3 +20,9 @@ https://github.com/itsliamdowd/Redact/assets/101684827/1876f4d5-fccb-4811-881d-3
 4. create a .env file with your huggingface access token like ACCESS_TOKEN = ""
 5. run app.py
 6. open your browser to http://127.0.0.1:5000
+
+## Roadmap
+1. Recognizing and redacting more types of sensitive information
+2. Adding selection for different models
+3. Allowing custom data to be redacted by the user per document
+4. Improving file processing speed and ease of use
