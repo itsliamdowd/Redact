@@ -1,5 +1,10 @@
-Flask==2.0.3
-langchain==0.0.353
+flask
+langchain==0.0.349
+langchain-core==0.0.13
+langchain-community==0.0.1
+langsmith==0.0.77
 pypdf==3.17.4
 spacy==3.7.2
-transformers==4.22.2
+transformers
+sentence_transformers
+chromadb
