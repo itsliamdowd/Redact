@@ -4,7 +4,7 @@ Unlock the potential of advanced language models without compromising sensitive 
 
 Redact uses the powerful Mixtral-8x7B model for quick and extremely accurate results.
 
-## Real-time demo
+## Real-time demo 🎬
 
 
 https://github.com/itsliamdowd/Redact/assets/101684827/1876f4d5-fccb-4811-881d-3a1cea47fc43
@@ -12,7 +12,7 @@ https://github.com/itsliamdowd/Redact/assets/101684827/1876f4d5-fccb-4811-881d-3
 
 
 
-## How it Works
+## How it Works 🔨
 Learn how Redact works.
 1. A file is uploaded by the user for processing.
 2. The text is extracted from the file and then sensitive information (names, addresses, emails, phone numbers, etc.) are replaced with generic values.
@@ -22,7 +22,7 @@ Learn how Redact works.
 7. The LLM model is loaded over an API call on a specific question with the ChromaDB context.
 9. When the reponse is returned to the user, the redacted information is swapped out for the sensitive information that was stored in the keyvalues.json file.
 
-## Installation
+## Installation 💻
 Follow these steps to set up Redact on your system:
 1. Clone the project using git clone.
 2. Create a new virtual environment (venv).
@@ -31,7 +31,7 @@ Follow these steps to set up Redact on your system:
 5. Run app.py to start the application.
 6. Open your browser and navigate to http://127.0.0.1:5000.
 
-## Roadmap
+## Roadmap 📌
 Redact is continuously evolving. Our future plans include:
 1. Recognizing and redacting more types of sensitive information
 2. Adding selection for different models
