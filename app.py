@@ -211,7 +211,7 @@ def newFile(files, filepaths):
         loader = TextLoader(redactedFile, encoding='UTF-8')
         documents = loader.load()
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=300, chunk_overlap=0, separators=[" ", ",", "\n"]
+            chunk_size=1000, chunk_overlap=0, separators=[" ", ",", "\n"]
         )
         texts = text_splitter.split_documents(documents)
         print(texts)
