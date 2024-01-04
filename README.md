@@ -12,6 +12,16 @@ https://github.com/itsliamdowd/Redact/assets/101684827/1876f4d5-fccb-4811-881d-3
 
 
 
+## How it Works
+Learn how Redact works.
+1. A file is uploaded by the user for processing.
+2. The text is extracted from the file and then sensitive information (names, addresses, emails, phone numbers, etc.) are replaced with generic values.
+3. The sensitive values are stored in a key value pair with their generic counterparts.
+4. The redacted file is split into chunks by langchain and stored in a ChromaDB file.
+5. Now that the file is processed, a user will ask a question involving the redacted information.
+7. The LLM model is loaded over an API call on a specific question with the ChromaDB context.
+9. When the reponse is returned to the user, the redacted information is swapped out for the sensitive information that was stored in the keyvalues.json file.
+
 ## Installation
 Follow these steps to set up Redact on your system:
 1. Clone the project using git clone.
